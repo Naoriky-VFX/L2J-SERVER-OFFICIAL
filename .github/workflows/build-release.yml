@@ -1,0 +1,87 @@
+name: compilar e lançar release
+
+# Compila o L2J (game, login, datapack) e publica um release com os .zip prontos.
+# Roda todo dia depois do sync e também no botão "Run workflow".
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # 00:00 de Brasília (o sync roda 02:15)
+  workflow_dispatch:
+    inputs:
+      forcar:
+        description: "Criar release mesmo sem mudança de código"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-release
+  cancel-in-progress: false
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Compilar commons
+        run: |
+          if [ -f commons/pom.xml ]; then
+            cd commons && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
+          fi
+
+      - name: Compilar game
+        run: cd game && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
+
+      - name: Compilar login
+        run: cd login && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
+
+      - name: Compilar datapack
+        run: cd datapack && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
+
+      - name: Juntar os pacotes
+        run: |
+          set -e
+          mkdir -p /tmp/pacotes
+          cp game/target/*.zip /tmp/pacotes/ 2>/dev/null || true
+          cp login/target/*.zip /tmp/pacotes/ 2>/dev/null || true
+          cp datapack/target/*.zip /tmp/pacotes/ 2>/dev/null || true
+          ls -lh /tmp/pacotes
+          if [ -z "$(ls -A /tmp/pacotes)" ]; then
+            echo "::error::Nenhum .zip foi gerado"
+            exit 1
+          fi
+
+      - name: Guardar os pacotes
+        uses: actions/upload-artifact@v4
+        with:
+          name: l2j-pacotes
+          path: /tmp/pacotes/*.zip
+          retention-days: 15
+
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_id }}
+          name: L2J oficial — build ${{ github.run_number }}
+          body: |
+            Compilado automaticamente do espelho do L2J oficial (Bitbucket).
+
+            - Commit: `${{ github.sha }}`
+            - Data: ${{ github.run_started_at }}
+            - Java: 25 (Temurin)
+            - Pacotes: game, login, datapack
+          files: /tmp/pacotes/*.zip
+          make_latest: true
