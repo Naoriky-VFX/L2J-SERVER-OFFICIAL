@@ -44,9 +44,11 @@ jobs:
           G=$(ultima l2j-server-game)
           L=$(ultima l2j-server-login)
           D=$(ultima l2j-server-datapack)
-          VER="game-${G:-?}_login-${L:-?}_datapack-${D:-?}"
+          VER="${G:-0.0.0}"
           echo "versao=$VER" >> "$GITHUB_OUTPUT"
-          echo "Última versão oficial: $VER"
+          echo "login=$L" >> "$GITHUB_OUTPUT"
+          echo "datapack=$D" >> "$GITHUB_OUTPUT"
+          echo "Última versão oficial: game=$G login=$L datapack=$D"
 
       - name: Já existe release dessa versão?
         id: existe
@@ -118,9 +120,10 @@ jobs:
           body: |
             Compilado automaticamente do espelho do L2J oficial (Bitbucket).
 
-            **Versão oficial:** `${{ steps.versao.outputs.versao }}`
+            **Versão:** `${{ steps.versao.outputs.versao }}`
+            - Login server: `${{ steps.versao.outputs.login }}`
+            - Datapack: `${{ steps.versao.outputs.datapack }}`
             - Commit do espelho: `${{ github.sha }}`
             - Java: 25 (Temurin)
-            - Pacotes: game, login, datapack
           files: /tmp/pacotes/*.zip
           make_latest: true
