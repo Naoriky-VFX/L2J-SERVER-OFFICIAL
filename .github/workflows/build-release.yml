@@ -36,6 +36,13 @@ jobs:
           java-version: "25"
           cache: maven
 
+      - name: Dar permissão nos scripts do Maven
+        run: |
+          for pasta in commons game login datapack; do
+            [ -f "$pasta/mvnw" ] && chmod +x "$pasta/mvnw"
+          done
+          ls -l game/mvnw
+
       - name: Compilar commons
         run: |
           if [ -f commons/pom.xml ]; then
