@@ -111,6 +111,15 @@ jobs:
             exit 1
           fi
 
+      - name: Baixar o geodata
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
+        run: |
+          set -e
+          echo "Baixando geodata (~216 MB)..."
+          curl -L --retry 3 --retry-delay 5 -o /tmp/pacotes/l2j-geodata-master.zip \
+            https://bitbucket.org/l2jgeo/l2j_geodata/get/master.zip
+          ls -lh /tmp/pacotes/l2j-geodata-master.zip
+
       - name: Publicar release
         if: steps.existe.outputs.novo == 'true' || inputs.forcar
         uses: softprops/action-gh-release@v2
@@ -123,6 +132,7 @@ jobs:
             **Versão:** `${{ steps.versao.outputs.versao }}`
             - Login server: `${{ steps.versao.outputs.login }}`
             - Datapack: `${{ steps.versao.outputs.datapack }}`
+            - Geodata: `l2j-geodata-master.zip` (bitbucket.org/l2jgeo)
             - Commit do espelho: `${{ github.sha }}`
             - Java: 25 (Temurin)
           files: /tmp/pacotes/*.zip
