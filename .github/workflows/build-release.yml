@@ -1,15 +1,16 @@
 name: compilar e lançar release
 
-# Compila o L2J (game, login, datapack) e publica um release com os .zip prontos.
-# Roda todo dia depois do sync e também no botão "Run workflow".
+# Compila o L2J (game, login, datapack) e publica release com os .zip.
+# Só cria release quando o Bitbucket publica uma VERSÃO NOVA (tag nova).
+# Também roda no botão "Run workflow" (com opção de forçar).
 
 on:
   schedule:
-    - cron: "0 3 * * *"   # 00:00 de Brasília (o sync roda 02:15)
+    - cron: "0 3 * * *"   # 00:00 de Brasília, depois do sync
   workflow_dispatch:
     inputs:
       forcar:
-        description: "Criar release mesmo sem mudança de código"
+        description: "Criar release mesmo que a versão já exista"
         type: boolean
         default: false
 
@@ -23,13 +24,45 @@ concurrency:
 jobs:
   compilar:
     runs-on: ubuntu-latest
+    outputs:
+      versao: ${{ steps.versao.outputs.versao }}
+      novo: ${{ steps.existe.outputs.novo }}
     steps:
       - name: Baixar o código
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Ver qual é a última versão oficial (tags do Bitbucket)
+        id: versao
+        run: |
+          set -e
+          ultima() {
+            git ls-remote --tags "https://bitbucket.org/l2jserver/$1.git" 'refs/tags/2.*' \
+              | awk -F/ '{print $3}' | grep -v '\^{}' | sort -V | tail -1
+          }
+          G=$(ultima l2j-server-game)
+          L=$(ultima l2j-server-login)
+          D=$(ultima l2j-server-datapack)
+          VER="game-${G:-?}_login-${L:-?}_datapack-${D:-?}"
+          echo "versao=$VER" >> "$GITHUB_OUTPUT"
+          echo "Última versão oficial: $VER"
+
+      - name: Já existe release dessa versão?
+        id: existe
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ steps.versao.outputs.versao }}" >/dev/null 2>&1; then
+            echo "novo=false" >> "$GITHUB_OUTPUT"
+            echo "Essa versão já foi lançada. Nada a fazer."
+          else
+            echo "novo=true" >> "$GITHUB_OUTPUT"
+            echo "Versão nova: ${{ steps.versao.outputs.versao }}"
+          fi
+
       - name: Instalar Java 25
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -37,28 +70,33 @@ jobs:
           cache: maven
 
       - name: Dar permissão nos scripts do Maven
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         run: |
           for pasta in commons game login datapack; do
             [ -f "$pasta/mvnw" ] && chmod +x "$pasta/mvnw"
           done
-          ls -l game/mvnw
 
       - name: Compilar commons
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         run: |
           if [ -f commons/pom.xml ]; then
             cd commons && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
           fi
 
       - name: Compilar game
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         run: cd game && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
 
       - name: Compilar login
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         run: cd login && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
 
       - name: Compilar datapack
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         run: cd datapack && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
 
       - name: Juntar os pacotes
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         run: |
           set -e
           mkdir -p /tmp/pacotes
@@ -71,23 +109,17 @@ jobs:
             exit 1
           fi
 
-      - name: Guardar os pacotes
-        uses: actions/upload-artifact@v4
-        with:
-          name: l2j-pacotes
-          path: /tmp/pacotes/*.zip
-          retention-days: 15
-
       - name: Publicar release
+        if: steps.existe.outputs.novo == 'true' || inputs.forcar
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_id }}
-          name: L2J oficial — build ${{ github.run_number }}
+          tag_name: ${{ steps.versao.outputs.versao }}
+          name: L2J ${{ steps.versao.outputs.versao }}
           body: |
             Compilado automaticamente do espelho do L2J oficial (Bitbucket).
 
-            - Commit: `${{ github.sha }}`
-            - Data: ${{ github.run_started_at }}
+            **Versão oficial:** `${{ steps.versao.outputs.versao }}`
+            - Commit do espelho: `${{ github.sha }}`
             - Java: 25 (Temurin)
             - Pacotes: game, login, datapack
           files: /tmp/pacotes/*.zip
