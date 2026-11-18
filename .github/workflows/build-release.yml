@@ -74,9 +74,17 @@ jobs:
       - name: Dar permissão nos scripts do Maven
         if: steps.existe.outputs.novo == 'true' || inputs.forcar
         run: |
-          for pasta in commons game login datapack; do
+          for pasta in mmocore commons game login datapack; do
             [ -f "$pasta/mvnw" ] && chmod +x "$pasta/mvnw"
           done
+
+      - name: Instalar mmocore (dependência do game)
+        run: |
+          if [ -f mmocore/pom.xml ]; then
+            cd mmocore && ./mvnw -B -q -DskipTests -Ddependency-check.skip=true install
+          else
+            echo "mmocore ainda não está no espelho; seguindo"
+          fi
 
       - name: Compilar commons
         if: steps.existe.outputs.novo == 'true' || inputs.forcar

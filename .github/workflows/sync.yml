@@ -1,6 +1,7 @@
 name: sync L2J oficial
 
 # Busca as atualizações no Bitbucket (l2jserver) e comita aqui.
+# Espelha TODOS os repositórios públicos do workspace, cada um na sua pasta.
 on:
   schedule:
     - cron: "15 5 * * *"   # 05:15 UTC = 02:15 no horário de Brasília
@@ -13,6 +14,22 @@ concurrency:
   group: sync-l2j
   cancel-in-progress: false
 
+env:
+  REPOS: >-
+    l2j-server-mmocore
+    l2j-server-game
+    l2j-server-datapack
+    l2j-server-login
+    l2j-server-commons
+    l2j-server-geo-driver
+    l2j-server-geo-abstraction
+    l2j-server-script-engine
+    l2j-server-cli
+    l2j-server-docker
+    l2j-server-game-docker
+    l2j-server-login-docker
+    l2j-server-discord-bot
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -20,23 +37,24 @@ jobs:
       - name: Baixar este repositório
         uses: actions/checkout@v4
 
-      - name: Buscar os 4 repositórios oficiais
+      - name: Buscar os repositórios oficiais
         run: |
           set -e
           rm -rf /tmp/l2j
           mkdir -p /tmp/l2j
-          git clone --depth 1 https://bitbucket.org/l2jserver/l2j-server-game.git     /tmp/l2j/game
-          git clone --depth 1 https://bitbucket.org/l2jserver/l2j-server-datapack.git /tmp/l2j/datapack
-          git clone --depth 1 https://bitbucket.org/l2jserver/l2j-server-login.git    /tmp/l2j/login
-          git clone --depth 1 https://bitbucket.org/l2jserver/l2j-server-commons.git  /tmp/l2j/commons
+          for repo in $REPOS; do
+            echo "clonando $repo"
+            git clone --depth 1 "https://bitbucket.org/l2jserver/$repo.git" "/tmp/l2j/$repo"
+          done
 
       - name: Espelhar (sem a pasta .git de cada um)
         run: |
           set -e
-          for pasta in game datapack login commons; do
-            rm -rf "$pasta"
-            mkdir -p "$pasta"
-            rsync -a --exclude='.git' "/tmp/l2j/$pasta/" "$pasta/"
+          for repo in $REPOS; do
+            destino="${repo#l2j-server-}"
+            rm -rf "$destino"
+            mkdir -p "$destino"
+            rsync -a --exclude='.git' "/tmp/l2j/$repo/" "$destino/"
           done
 
       - name: Comitar se mudou algo
