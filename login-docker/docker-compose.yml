@@ -1,0 +1,63 @@
+version: "2.4"
+
+volumes:
+  # database data is preserved here
+  login-database-data:
+  # logs
+  login-server-logs:
+  # custom loginserver data is preserved here
+  login-server-custom-data:
+
+networks:
+  default:
+    driver: none
+  database:
+    name: l2jserver-ls-db
+  server:
+    name: l2jserver
+
+services:
+  login-database:
+    image: mariadb:11.8
+    container_name: login-database
+    #environment:
+      # variables required on first startup, remove after first run
+      #- MARIADB_ROOT_PASSWORD=mariadb_root_password
+      #- MARIADB_ROOT_HOST=%
+      #- MARIADB_MYSQL_LOCALHOST_USER=1
+      #- MARIADB_DATABASE=l2jls
+    volumes:
+      - login-database-data:/var/lib/mysql:rw
+    networks:
+      - database
+
+  login-server:
+    image: l2j-server-login
+    depends_on:
+      - login-database
+    ports:
+      # gameserver listener, only expose when login and game are on different hosts
+      - 9014:9014
+      # gameclient listener
+      - 2106:2106
+    environment:
+      # variables required on first startup to initialize the database
+      #- L2JLOGIN_DB_INIT=1
+      #- L2JLOGIN_DB_HOST=login-database
+      #- L2JLOGIN_DB_PORT=3306
+      #- L2JLOGIN_DB_USER=l2jls
+      #- L2JLOGIN_DB_PASS=mariadb_l2jls_password
+      #- L2JLOGIN_DB_NAME=l2jls
+      #- L2JLOGIN_DB_INSTALL_USER=root
+      #- L2JLOGIN_DB_INSTALL_PASS=mariadb_root_password
+      # variables required after initial start or custom config files in the mapped volume for custom data
+      - L2JLOGIN_server_GameServerHost=*
+      - L2JLOGIN_database_URL=jdbc:mariadb://login-database:3306/l2jls
+      - L2JLOGIN_database_User=l2jls
+      - L2JLOGIN_database_Password=mariadb_l2jls_password
+    volumes:
+      - login-server-logs:/opt/l2j/deploy/login/logs:rw
+      - login-server-custom-data:/opt/l2j/custom/login:rw
+    networks:
+      - database
+      - server

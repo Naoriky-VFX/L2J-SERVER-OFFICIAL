@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.l2jserver</groupId>
+	<artifactId>l2j-server-mmocore</artifactId>
+	<version>2.6.6.0</version>
+	<name>L2J Server - MMO Core</name>
+	<description>MMOCore is a communication abstraction library for game server development.</description>
+	<url>https://bitbucket.org/l2jserver/l2j-server-mmocore/</url>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>25</maven.compiler.source>
+		<maven.compiler.target>25</maven.compiler.target>
+	</properties>
+	<licenses>
+		<license>
+			<name>GPL 3.0</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+		</license>
+	</licenses>
+	<organization>
+		<name>L2J Server</name>
+		<url>https://l2jserver.com</url>
+	</organization>
+	<developers>
+		<developer>
+			<id>Zoey76</id>
+		</developer>
+		<developer>
+			<id>KenM</id>
+		</developer>
+		<developer>
+			<id>Forsaiken</id>
+		</developer>
+		<developer>
+			<id>WoodenGil</id>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:git://bitbucket.org/l2jserver/l2j-server-mmocore.git</connection>
+		<developerConnection>scm:git:ssh://bitbucket.org:l2jserver/l2j-server-mmocore.git</developerConnection>
+		<url>https://bitbucket.org/l2jserver/l2j-server-mmocore/src</url>
+	</scm>
+</project>

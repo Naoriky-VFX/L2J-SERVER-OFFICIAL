@@ -1,0 +1,28 @@
+# All lines with # are only for comments and will be ignored
+# Any new additions to these questions and answers must follow the same pattern.
+# Lines after the subject indicator (Q for questions and A for answers) must have a length of 3 until the ``` quotes.
+# That means if we have more questions and are with 2 or even 3 digits then will be like this.
+# Q1--```Question?```
+# Q12-```Question?```
+# A123```Answer```
+# The `-` above used to show the length so all Questions and Answers must start at the same substring.
+
+
+Q1  ```1. What is L2J project?```
+A1  ```1. [L2J Server is an open-source server emulator fully written in Java for the famous Korean MMORPG.]```
+Q2  ```2. Where I can find information about this project?```
+A2  ```2. [The first thing that you need to do is to visit our Web Site.]``` Link: [Web Site](https://www.l2jserver.com/)
+Q3  ```3. Where I can download/clone the source code?```
+A3  ```3. [The source code of this project is available from our Repository.]``` Link: [Repository](https://bitbucket.org/l2jserver/)
+Q4  ```4. What are the programs/applications that i need to build the source?```
+A4  ```4. [There are video English/Spanish guides that can help you where to download and how to install all necessary applications in announcements.]```
+Q5  ```5. I can't find a solution in auto support, what should I do now?```
+A5  ```5. [If you need extra support, please select the corresponding channel to ask, and one of the community members will definitely help you.]```
+Q6  ```6. I did everything right but i can not compile the source. What i did wrong?```
+A6  ```6. [The most common mistake that everyone does is the java version. Please make sure that you have the right version.]```
+Q7  ```7. What are the minimum requirements to run a server?```
+A7  ```7. [A) Windows or Linux system with Java JDK 14+ and MariaDB 10.5+. B) At least 4gb of RAM and 2 Cores. C) Open ports 2106 and 7777. D) High Five part 5 client fully updated.]```
+Q8  ```8. I have managed to compile the source and run the server correctly but my friends can not join the server. What can be wrong?```
+A8  ```8. [The most common mistake that everyone does is the client is not configured correctly. Please confirm that you have configured the client to connect to your Server (IP).``` Useful Link: [Guide](https://www.l2jserver.com/windows.html#:~:text=as%20a%20player.-,Connect%20to%20the%20Server,-In%20order%20to)
+Q9  ```9. I would like to have all the useful links, like website, repository, etc.. Where I can find them?```
+A9  ```9. [Dummy answer, Replaced by an embed response.]```

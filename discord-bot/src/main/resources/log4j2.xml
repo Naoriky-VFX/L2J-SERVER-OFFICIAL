@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss} %c{1}: %msg%n" />
+		</Console>
+		<RollingFile name="discordbot" fileName="logs/discordbot.log" filePattern="logs/discordbot.%d{yyyy-MM-dd-HH-mm-ss}.log" ignoreExceptions="false">
+			<PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss} %c{1}: %msg%n" />
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="100 MB" />
+			</Policies>
+		</RollingFile>
+		<RollingFile name="error" fileName="logs/error/error.log" filePattern="logs/error/error.%d{yyyy-MM-dd-HH-mm-ss}.log" ignoreExceptions="false">
+			<PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss} %c{1}: %msg%n" />
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="100 MB" />
+			</Policies>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="debug">
+			<appender-ref ref="console" level="info" />
+			<appender-ref ref="discordbot" level="info" />
+			<appender-ref ref="error" level="warn" />
+		</Root>
+	</Loggers>
+</Configuration>
